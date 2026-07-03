@@ -2,6 +2,14 @@ const button = document.getElementById("generateBtn");
 const textarea = document.getElementById("prompt");
 const result = document.getElementById("result");
 
+// default tool
+let selectedType = "ideas";
+
+// If you add buttons later, they can change this
+window.setToolType = function (type) {
+  selectedType = type;
+};
+
 button.addEventListener("click", async () => {
   const topic = textarea.value.trim();
 
@@ -14,14 +22,13 @@ button.addEventListener("click", async () => {
   button.disabled = true;
 
   result.style.display = "block";
-  result.innerHTML = "⏳ AI is generating ideas...";
+  result.innerHTML = "⏳ AI is generating...";
 
   try {
-    // FIX: use correct API function from api.js
-    const aiResponse = await generateScript(topic);
+    const aiResponse = await generateScript(topic, selectedType);
 
     result.innerHTML = `
-      <h3>🔥 AI Generated Ideas</h3>
+      <h3>🔥 AI Result (${selectedType})</h3>
       <pre>${aiResponse}</pre>
 
       <button id="copyBtn">📋 Copy</button>
@@ -35,7 +42,7 @@ button.addEventListener("click", async () => {
   } catch (error) {
     result.innerHTML = `
       <p style="color:red;">
-        ❌ Failed to generate ideas.<br>
+        ❌ Failed to generate content.<br>
         ${error.message || "Unknown error"}
       </p>
     `;
