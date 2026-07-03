@@ -6,104 +6,66 @@ const historyBox = document.getElementById("historyList");
 let selectedType = "ideas";
 let history = JSON.parse(localStorage.getItem("clipHistory")) || [];
 
-/* TOOL MAP */
-const tools = {
-  ideas: "💡 Ideas",
-  script: "🎬 Script",
-  hook: "🔥 Hook",
-  caption: "📝 Caption",
-  hashtags: "# Hashtags"
-};
-
-/* SET ACTIVE TOOL (SAFE) */
-function setActiveTool(type) {
+/* TOOL BUTTON CLICK */
+window.setToolType = function(type) {
   selectedType = type;
 
   document.querySelectorAll(".tool-buttons button").forEach(btn => {
     btn.classList.remove("active");
 
-    if (btn.innerText === tools[type]) {
+    if (btn.getAttribute("data-type") === type) {
       btn.classList.add("active");
     }
   });
-}
-
-/* TOOL BUTTON CLICK (HTML onclick use karega) */
-window.setToolType = function(type) {
-  setActiveTool(type);
 };
 
 /* GENERATE */
 button.addEventListener("click", async () => {
 
   const topic = textarea.value.trim();
-  if (!topic) {
-    alert("Please enter your niche");
-    return;
-  }
+  if (!topic) return alert("Enter something");
 
   button.innerText = "Generating...";
   button.disabled = true;
 
-  result.style.display = "block";
   result.innerHTML = '<div class="loader"></div>';
 
   try {
 
     const aiResponse = await generateScript(topic, selectedType);
 
-    result.style.opacity = "0";
-
     result.innerHTML = `
-      <h3>🔥 AI Result (${selectedType})</h3>
-      <pre id="typedText"></pre>
-      <button id="copyBtn">📋 Copy</button>
+      <h3>🔥 Result (${selectedType})</h3>
+      <pre id="typed"></pre>
+      <button id="copyBtn">Copy</button>
     `;
 
-    setTimeout(() => {
+    const el = document.getElementById("typed");
+    let i = 0;
 
-      const el = document.getElementById("typedText");
-      el.innerHTML = "";
-
-      let i = 0;
-
-      function typeWriter() {
-        if (i < aiResponse.length) {
-          el.innerHTML += aiResponse.charAt(i);
-          i++;
-          setTimeout(typeWriter, 10);
-        }
+    function typeWriter() {
+      if (i < aiResponse.length) {
+        el.innerHTML += aiResponse[i++];
+        setTimeout(typeWriter, 8);
       }
+    }
 
-      typeWriter();
+    typeWriter();
 
-      document.getElementById("copyBtn").onclick = () => {
-        navigator.clipboard.writeText(aiResponse);
-        alert("Copied ✅");
-      };
+    document.getElementById("copyBtn").onclick = () => {
+      navigator.clipboard.writeText(aiResponse);
+      alert("Copied");
+    };
 
-      /* SAVE HISTORY */
-      history.unshift({
-        type: selectedType,
-        prompt: topic,
-        result: aiResponse
-      });
+    /* HISTORY SAVE */
+    history.unshift({ type: selectedType, prompt: topic });
 
-      localStorage.setItem(
-        "clipHistory",
-        JSON.stringify(history.slice(0, 10))
-      );
+    localStorage.setItem("clipHistory", JSON.stringify(history.slice(0, 10)));
 
-      renderHistory();
+    renderHistory();
 
-      result.style.opacity = "1";
-
-    }, 100);
-
-  } catch (err) {
-    result.innerHTML = `
-      <p style="color:red;">❌ ${err.message}</p>
-    `;
+  } catch (e) {
+    result.innerHTML = "Error: " + e.message;
   }
 
   button.innerText = "Generate 🚀";
@@ -112,24 +74,26 @@ button.addEventListener("click", async () => {
 
 /* HISTORY RENDER */
 function renderHistory() {
-
   if (!historyBox) return;
 
   historyBox.innerHTML = "";
 
   history.forEach(item => {
-
     const div = document.createElement("div");
     div.className = "history-item";
 
-    div.innerHTML = `
-      <b>${item.type}</b><br>
-      <small>${item.prompt}</small>
-    `;
+    div.innerHTML = `<b>${item.type}</b><br>${item.prompt}`;
 
     div.onclick = () => {
+
       textarea.value = item.prompt;
-      setActiveTool(item.type);
+      selectedType = item.type;
+
+      document.querySelectorAll(".tool-buttons button").forEach(btn => {
+        if (btn.getAttribute("data-type") === item.type) {
+          btn.click();
+        }
+      });
     };
 
     historyBox.appendChild(div);
@@ -137,5 +101,4 @@ function renderHistory() {
 }
 
 /* INIT */
-setActiveTool(selectedType);
 renderHistory();
