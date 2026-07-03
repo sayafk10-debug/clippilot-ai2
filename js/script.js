@@ -4,13 +4,11 @@ const result = document.getElementById("result");
 
 let selectedType = "ideas";
 
-// TOOL SWITCH
 window.setToolType = function (type) {
   selectedType = type;
   updateActiveButton(type);
 };
 
-// ACTIVE BUTTON UI
 function updateActiveButton(type) {
   document.querySelectorAll(".tool-buttons button").forEach(btn => {
     btn.classList.remove("active");
@@ -25,11 +23,10 @@ function updateActiveButton(type) {
   }
 }
 
-// MAIN GENERATE
 button.addEventListener("click", async () => {
   const topic = textarea.value.trim();
 
-  if (topic === "") {
+  if (!topic) {
     alert("Please enter your niche.");
     return;
   }
@@ -38,10 +35,12 @@ button.addEventListener("click", async () => {
   button.disabled = true;
 
   result.style.display = "block";
-  result.innerHTML = "⏳ AI is generating...";
+  result.innerHTML = '<div class="loader"></div><p>AI is generating...</p>';
 
   try {
     const aiResponse = await generateScript(topic, selectedType);
+
+    result.style.opacity = "0";
 
     result.innerHTML = `
       <h3>🔥 AI Result (${selectedType})</h3>
@@ -49,6 +48,10 @@ button.addEventListener("click", async () => {
 
       <button id="copyBtn">📋 Copy</button>
     `;
+
+    setTimeout(() => {
+      result.style.opacity = "1";
+    }, 100);
 
     document.getElementById("copyBtn").onclick = () => {
       navigator.clipboard.writeText(aiResponse);
@@ -58,15 +61,15 @@ button.addEventListener("click", async () => {
   } catch (error) {
     result.innerHTML = `
       <p style="color:red;">
-        ❌ Failed to generate content.<br>
-        ${error.message || "Unknown error"}
+        ❌ Error: ${error.message || "Something went wrong"}
       </p>
     `;
   }
 
   button.innerHTML = "Generate Ideas 🚀";
   button.disabled = false;
+
+  updateActiveButton(selectedType);
 });
 
-// DEFAULT ACTIVE BUTTON
 updateActiveButton("ideas");
