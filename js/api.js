@@ -1,5 +1,5 @@
 
-async function generateScript(prompt) {
+async function generateScript(prompt, type = "ideas") {
   const response = await fetch("/api/generate", {
     method: "POST",
     headers: {
@@ -7,6 +7,7 @@ async function generateScript(prompt) {
     },
     body: JSON.stringify({
       prompt,
+      type,
     }),
   });
 
