@@ -44,19 +44,35 @@ button.addEventListener("click", async () => {
 
     result.innerHTML = `
       <h3>🔥 AI Result (${selectedType})</h3>
-      <pre>${aiResponse}</pre>
+      <pre id="typedText"></pre>
 
       <button id="copyBtn">📋 Copy</button>
     `;
 
     setTimeout(() => {
       result.style.opacity = "1";
-    }, 100);
 
-    document.getElementById("copyBtn").onclick = () => {
-      navigator.clipboard.writeText(aiResponse);
-      alert("Copied ✅");
-    };
+      const el = document.getElementById("typedText");
+      el.innerHTML = "";
+
+      let i = 0;
+
+      function typeWriter() {
+        if (i < aiResponse.length) {
+          el.innerHTML += aiResponse.charAt(i);
+          i++;
+          setTimeout(typeWriter, 12);
+        }
+      }
+
+      typeWriter();
+
+      document.getElementById("copyBtn").onclick = () => {
+        navigator.clipboard.writeText(aiResponse);
+        alert("Copied ✅");
+      };
+
+    }, 100);
 
   } catch (error) {
     result.innerHTML = `
