@@ -5,67 +5,99 @@ const result = document.getElementById("result");
 let selectedType = "ideas";
 let history = JSON.parse(localStorage.getItem("clipHistory")) || [];
 
-window.setToolType = function(type) {
+/* TOOL SWITCH */
+window.setToolType = function (type) {
   selectedType = type;
 
-  document.querySelectorAll(".tool-buttons button").forEach(b => {
-    b.classList.remove("active");
+  document.querySelectorAll(".tool-buttons button").forEach(btn => {
+    btn.classList.remove("active");
   });
 
-  event.target.classList.add("active");
+  if (event && event.target) {
+    event.target.classList.add("active");
+  }
 };
 
+/* MAIN GENERATE */
 button.addEventListener("click", async () => {
 
   const topic = textarea.value.trim();
-  if (!topic) return alert("Enter niche");
+  if (!topic) {
+    alert("Please enter your niche");
+    return;
+  }
 
   button.innerText = "Generating...";
   button.disabled = true;
 
+  result.style.display = "block";
   result.innerHTML = '<div class="loader"></div>';
 
-  const aiResponse = await generateScript(topic, selectedType);
+  try {
 
-  result.style.opacity = "0";
+    const aiResponse = await generateScript(topic, selectedType);
 
-  result.innerHTML = `
-    <h3>🔥 Result</h3>
-    <pre id="typed"></pre>
-    <button id="copyBtn">Copy</button>
-  `;
+    // create UI first
+    result.style.opacity = "0";
 
-  setTimeout(() => {
+    result.innerHTML = `
+      <h3>🔥 AI Result (${selectedType})</h3>
+      <pre id="typedText"></pre>
+      <button id="copyBtn">📋 Copy</button>
+    `;
 
-    let i = 0;
-    const el = document.getElementById("typed");
+    setTimeout(() => {
 
-    function type() {
-      if (i < aiResponse.length) {
-        el.innerHTML += aiResponse[i++];
-        setTimeout(type, 10);
+      const el = document.getElementById("typedText");
+      el.innerHTML = "";
+
+      let i = 0;
+
+      function typeWriter() {
+        if (i < aiResponse.length) {
+          el.innerHTML += aiResponse.charAt(i);
+          i++;
+          setTimeout(typeWriter, 8);
+        }
       }
-    }
 
-    type();
+      typeWriter();
 
-    document.getElementById("copyBtn").onclick = () => {
-      navigator.clipboard.writeText(aiResponse);
-      alert("Copied");
-    };
+      // COPY
+      document.getElementById("copyBtn").onclick = () => {
+        navigator.clipboard.writeText(aiResponse);
+        alert("Copied ✅");
+      };
 
-  }, 100);
+      // HISTORY SAVE
+      history.unshift({
+        type: selectedType,
+        prompt: topic,
+        result: aiResponse
+      });
 
-  // SAVE HISTORY
-  history.unshift({ type: selectedType, prompt: topic });
-  localStorage.setItem("clipHistory", JSON.stringify(history.slice(0, 10)));
+      localStorage.setItem(
+        "clipHistory",
+        JSON.stringify(history.slice(0, 10))
+      );
 
-  renderHistory();
+      renderHistory();
+
+      result.style.opacity = "1";
+
+    }, 100);
+
+  } catch (err) {
+    result.innerHTML = `
+      <p style="color:red;">❌ ${err.message}</p>
+    `;
+  }
 
   button.innerText = "Generate 🚀";
   button.disabled = false;
 });
 
+/* HISTORY RENDER */
 function renderHistory() {
   const box = document.getElementById("historyList");
   if (!box) return;
@@ -75,7 +107,11 @@ function renderHistory() {
   history.forEach(item => {
     const div = document.createElement("div");
     div.className = "history-item";
-    div.innerHTML = `<b>${item.type}</b><br>${item.prompt}`;
+
+    div.innerHTML = `
+      <b>${item.type}</b><br>
+      <small>${item.prompt}</small>
+    `;
 
     div.onclick = () => {
       textarea.value = item.prompt;
@@ -86,4 +122,5 @@ function renderHistory() {
   });
 }
 
+/* INIT */
 renderHistory();
