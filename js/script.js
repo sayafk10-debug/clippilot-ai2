@@ -6,27 +6,29 @@ const historyBox = document.getElementById("historyList");
 let selectedType = "ideas";
 let history = JSON.parse(localStorage.getItem("clipHistory")) || [];
 
-/* TOOL BUTTON CLICK */
 window.setToolType = function(type) {
   selectedType = type;
 
   document.querySelectorAll(".tool-buttons button").forEach(btn => {
     btn.classList.remove("active");
 
-    if (btn.getAttribute("data-type") === type) {
+    if (btn.dataset.type === type) {
       btn.classList.add("active");
     }
   });
 };
 
-/* GENERATE */
 button.addEventListener("click", async () => {
 
   const topic = textarea.value.trim();
-  if (!topic) return alert("Enter something");
 
-  button.innerText = "Generating...";
+  if (!topic) {
+    alert("Enter something");
+    return;
+  }
+
   button.disabled = true;
+  button.innerText = "Generating...";
 
   result.innerHTML = '<div class="loader"></div>';
 
@@ -40,65 +42,79 @@ button.addEventListener("click", async () => {
       <button id="copyBtn">Copy</button>
     `;
 
-    const el = document.getElementById("typed");
+    const typed = document.getElementById("typed");
+    typed.textContent = "";
+
     let i = 0;
 
-    function typeWriter() {
+    function typing() {
       if (i < aiResponse.length) {
-        el.innerHTML += aiResponse[i++];
-        setTimeout(typeWriter, 8);
+        typed.textContent += aiResponse.charAt(i);
+        i++;
+        setTimeout(typing, 8);
       }
     }
 
-    typeWriter();
+    typing();
 
     document.getElementById("copyBtn").onclick = () => {
       navigator.clipboard.writeText(aiResponse);
-      alert("Copied");
+      alert("Copied ✅");
     };
 
-    /* HISTORY SAVE */
-    history.unshift({ type: selectedType, prompt: topic });
+    history.unshift({
+      type: selectedType,
+      prompt: topic
+    });
 
-    localStorage.setItem("clipHistory", JSON.stringify(history.slice(0, 10)));
+    history = history.slice(0, 10);
+
+    localStorage.setItem("clipHistory", JSON.stringify(history));
 
     renderHistory();
 
-  } catch (e) {
-    result.innerHTML = "Error: " + e.message;
+  } catch (err) {
+
+    result.innerHTML =
+      `<p style="color:red">${err.message}</p>`;
+
   }
 
-  button.innerText = "Generate 🚀";
   button.disabled = false;
+  button.innerText = "Generate 🚀";
+
 });
 
-/* HISTORY RENDER */
 function renderHistory() {
+
   if (!historyBox) return;
 
   historyBox.innerHTML = "";
 
   history.forEach(item => {
+
     const div = document.createElement("div");
+
     div.className = "history-item";
 
-    div.innerHTML = `<b>${item.type}</b><br>${item.prompt}`;
+    div.innerHTML = `
+      <strong>${item.type}</strong><br>
+      ${item.prompt}
+    `;
 
     div.onclick = () => {
 
       textarea.value = item.prompt;
-      selectedType = item.type;
 
-      document.querySelectorAll(".tool-buttons button").forEach(btn => {
-        if (btn.getAttribute("data-type") === item.type) {
-          btn.click();
-        }
-      });
+      setToolType(item.type);
+
     };
 
     historyBox.appendChild(div);
+
   });
+
 }
 
-/* INIT */
+setToolType(selectedType);
 renderHistory();
