@@ -6,19 +6,20 @@ let selectedType = "ideas";
 let history = JSON.parse(localStorage.getItem("clipHistory")) || [];
 
 /* TOOL SWITCH */
-window.setToolType = function (type) {
+window.setToolType = function (type, fromHistory = false, el = null) {
   selectedType = type;
 
   document.querySelectorAll(".tool-buttons button").forEach(btn => {
     btn.classList.remove("active");
   });
 
-  if (event && event.target) {
-    event.target.classList.add("active");
+  // highlight only if clicked from UI button
+  if (el) {
+    el.classList.add("active");
   }
 };
 
-/* MAIN GENERATE */
+/* GENERATE */
 button.addEventListener("click", async () => {
 
   const topic = textarea.value.trim();
@@ -37,7 +38,6 @@ button.addEventListener("click", async () => {
 
     const aiResponse = await generateScript(topic, selectedType);
 
-    // create UI first
     result.style.opacity = "0";
 
     result.innerHTML = `
@@ -63,13 +63,12 @@ button.addEventListener("click", async () => {
 
       typeWriter();
 
-      // COPY
       document.getElementById("copyBtn").onclick = () => {
         navigator.clipboard.writeText(aiResponse);
         alert("Copied ✅");
       };
 
-      // HISTORY SAVE
+      // SAVE HISTORY
       history.unshift({
         type: selectedType,
         prompt: topic,
@@ -97,7 +96,7 @@ button.addEventListener("click", async () => {
   button.disabled = false;
 });
 
-/* HISTORY RENDER */
+/* HISTORY */
 function renderHistory() {
   const box = document.getElementById("historyList");
   if (!box) return;
@@ -115,7 +114,7 @@ function renderHistory() {
 
     div.onclick = () => {
       textarea.value = item.prompt;
-      setToolType(item.type);
+      setToolType(item.type, true);
     };
 
     box.appendChild(div);
