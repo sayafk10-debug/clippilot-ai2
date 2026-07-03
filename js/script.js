@@ -3,108 +3,87 @@ const textarea = document.getElementById("prompt");
 const result = document.getElementById("result");
 
 let selectedType = "ideas";
-
-// LOAD HISTORY
 let history = JSON.parse(localStorage.getItem("clipHistory")) || [];
 
-// TOOL SWITCH
-window.setToolType = function (type) {
+window.setToolType = function(type) {
   selectedType = type;
-  updateActiveButton(type);
-};
 
-// ACTIVE BUTTON UI
-function updateActiveButton(type) {
-  document.querySelectorAll(".tool-buttons button").forEach(btn => {
-    btn.classList.remove("active");
+  document.querySelectorAll(".tool-buttons button").forEach(b => {
+    b.classList.remove("active");
   });
 
-  const activeBtn = document.querySelector(
-    `button[onclick="setToolType('${type}')"]`
-  );
+  event.target.classList.add("active");
+};
 
-  if (activeBtn) {
-    activeBtn.classList.add("active");
-  }
-}
-
-// GENERATE CLICK
 button.addEventListener("click", async () => {
+
   const topic = textarea.value.trim();
+  if (!topic) return alert("Enter niche");
 
-  if (!topic) {
-    alert("Please enter your niche.");
-    return;
-  }
-
-  button.innerHTML = "Generating...";
+  button.innerText = "Generating...";
   button.disabled = true;
 
-  result.style.display = "block";
-  result.innerHTML = '<div class="loader"></div><p>AI is generating...</p>';
+  result.innerHTML = '<div class="loader"></div>';
 
-  try {
-    const aiResponse = await generateScript(topic, selectedType);
+  const aiResponse = await generateScript(topic, selectedType);
 
-    result.style.opacity = "0";
+  result.style.opacity = "0";
 
-    result.innerHTML = `
-      <h3>🔥 AI Result (${selectedType})</h3>
-      <pre id="typedText"></pre>
-      <button id="copyBtn">📋 Copy</button>
-    `;
+  result.innerHTML = `
+    <h3>🔥 Result</h3>
+    <pre id="typed"></pre>
+    <button id="copyBtn">Copy</button>
+  `;
 
-    setTimeout(() => {
-      result.style.opacity = "1";
+  setTimeout(() => {
 
-      const el = document.getElementById("typedText");
-      el.innerHTML = "";
+    let i = 0;
+    const el = document.getElementById("typed");
 
-      let i = 0;
-
-      function typeWriter() {
-        if (i < aiResponse.length) {
-          el.innerHTML += aiResponse.charAt(i);
-          i++;
-          setTimeout(typeWriter, 12);
-        }
+    function type() {
+      if (i < aiResponse.length) {
+        el.innerHTML += aiResponse[i++];
+        setTimeout(type, 10);
       }
+    }
 
-      typeWriter();
+    type();
 
-      // COPY BUTTON
-      document.getElementById("copyBtn").onclick = () => {
-        navigator.clipboard.writeText(aiResponse);
-        alert("Copied ✅");
-      };
+    document.getElementById("copyBtn").onclick = () => {
+      navigator.clipboard.writeText(aiResponse);
+      alert("Copied");
+    };
 
-      // SAVE HISTORY
-      history.unshift({
-        type: selectedType,
-        prompt: topic,
-        result: aiResponse
-      });
+  }, 100);
 
-      localStorage.setItem(
-        "clipHistory",
-        JSON.stringify(history.slice(0, 10))
-      );
+  // SAVE HISTORY
+  history.unshift({ type: selectedType, prompt: topic });
+  localStorage.setItem("clipHistory", JSON.stringify(history.slice(0, 10)));
 
-    }, 100);
+  renderHistory();
 
-  } catch (error) {
-    result.innerHTML = `
-      <p style="color:red;">
-        ❌ Error: ${error.message || "Something went wrong"}
-      </p>
-    `;
-  }
-
-  button.innerHTML = "Generate Ideas 🚀";
+  button.innerText = "Generate 🚀";
   button.disabled = false;
-
-  updateActiveButton(selectedType);
 });
 
-// DEFAULT ACTIVE
-updateActiveButton("ideas");
+function renderHistory() {
+  const box = document.getElementById("historyList");
+  if (!box) return;
+
+  box.innerHTML = "";
+
+  history.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `<b>${item.type}</b><br>${item.prompt}`;
+
+    div.onclick = () => {
+      textarea.value = item.prompt;
+      setToolType(item.type);
+    };
+
+    box.appendChild(div);
+  });
+}
+
+renderHistory();
