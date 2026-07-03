@@ -13,7 +13,7 @@
 
 <header>
 <nav class="navbar">
-<div class="logo">🚀 ClipPilot</div>
+<div class="logo">🚀 ClipPilot AI</div>
 </nav>
 </header>
 
@@ -21,30 +21,53 @@
 
 <h2>💡 AI Content Generator</h2>
 
-<p>Generate viral ideas, scripts, hooks, captions instantly.</p>
+<p>Generate viral ideas, scripts, hooks, captions and hashtags instantly.</p>
 
 <div class="tool-buttons">
-  <button onclick="setToolType('ideas')">💡 Ideas</button>
-  <button onclick="setToolType('script')">🎬 Script</button>
-  <button onclick="setToolType('hook')">🔥 Hook</button>
-  <button onclick="setToolType('caption')">📝 Caption</button>
-  <button onclick="setToolType('hashtags')"># Hashtags</button>
+
+<button data-type="ideas" onclick="setToolType('ideas')">
+💡 Ideas
+</button>
+
+<button data-type="script" onclick="setToolType('script')">
+🎬 Script
+</button>
+
+<button data-type="hook" onclick="setToolType('hook')">
+🔥 Hook
+</button>
+
+<button data-type="caption" onclick="setToolType('caption')">
+📝 Caption
+</button>
+
+<button data-type="hashtags" onclick="setToolType('hashtags')">
+# Hashtags
+</button>
+
 </div>
 
 <div class="generator-box">
 
-<textarea id="prompt" placeholder="Enter your niche..."></textarea>
+<textarea
+id="prompt"
+placeholder="Example: Furniture business for Saudi Arabia..."
+></textarea>
 
-<button id="generateBtn">Generate 🚀</button>
+<button id="generateBtn">
+Generate 🚀
+</button>
 
 <div id="result"></div>
 
 </div>
 
-<!-- HISTORY PANEL -->
 <div id="historyPanel">
-  <h3>📜 History</h3>
-  <div id="historyList"></div>
+
+<h3>📜 History</h3>
+
+<div id="historyList"></div>
+
 </div>
 
 </section>
