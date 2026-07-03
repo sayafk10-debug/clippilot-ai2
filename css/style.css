@@ -30,6 +30,8 @@ header {
   border: 1px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.08);
   color: white;
+  cursor: pointer;
+  transition: .25s;
 }
 
 .tool-buttons button.active {
@@ -58,6 +60,7 @@ button {
   border-radius: 8px;
   background: #6366f1;
   color: white;
+  cursor: pointer;
 }
 
 #result {
@@ -88,7 +91,9 @@ pre {
 }
 
 @keyframes spin {
-  100% { transform: rotate(360deg); }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 #historyPanel {
@@ -100,9 +105,40 @@ pre {
 }
 
 .history-item {
-  padding: 10px;
+  padding: 12px;
   margin-top: 10px;
   background: rgba(255,255,255,0.08);
+  border-radius: 10px;
+}
+
+/* ===== HISTORY ACTIONS ===== */
+
+.history-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.history-icon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 8px;
+  background: rgba(255,255,255,0.08);
   cursor: pointer;
+  user-select: none;
+  transition: .25s;
+  font-size: 18px;
+}
+
+.history-icon:hover {
+  background: #6366f1;
+  transform: scale(1.08);
+}
+
+.history-icon:active {
+  transform: scale(.95);
 }
