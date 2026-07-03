@@ -1,1 +1,2 @@
-const OPENROUTER_API_KEY = "YOUR_API_KEY";
+// API keys are handled securely on the server.
+// No client-side API key is required.
