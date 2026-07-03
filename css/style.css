@@ -1,3 +1,4 @@
+
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
@@ -32,7 +33,7 @@ body {
   padding: 40px 20px;
 }
 
-/* GENERATOR */
+/* GENERATOR SECTION */
 .generator {
   padding: 20px;
   text-align: center;
@@ -47,6 +48,7 @@ body {
   margin-top: 15px;
 }
 
+/* INPUT */
 textarea {
   width: 100%;
   height: 120px;
@@ -57,7 +59,7 @@ textarea {
   outline: none;
 }
 
-/* BUTTON */
+/* BUTTONS */
 button {
   padding: 12px 18px;
   border: none;
@@ -85,12 +87,18 @@ button:hover {
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.1);
   color: white;
+  transition: all 0.2s ease;
+}
+
+.tool-buttons button:hover {
+  transform: scale(1.05);
 }
 
 .tool-buttons button.active {
   background: #6366f1;
   border-color: #6366f1;
-  box-shadow: 0 0 10px rgba(99,102,241,0.6);
+  box-shadow: 0 0 12px rgba(99,102,241,0.8);
+  transform: scale(1.08);
 }
 
 /* RESULT */
@@ -100,6 +108,7 @@ button:hover {
   transition: opacity 0.3s ease;
 }
 
+/* AI OUTPUT BOX */
 pre {
   white-space: pre-wrap;
   background: rgba(255,255,255,0.05);
