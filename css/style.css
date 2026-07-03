@@ -4,18 +4,15 @@ body {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: #e5e7eb;
 }
-
 header {
   padding: 15px;
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(10px);
 }
-
 .generator {
   padding: 20px;
   text-align: center;
 }
-
 .tool-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -23,7 +20,6 @@ header {
   justify-content: center;
   margin: 15px 0;
 }
-
 .tool-buttons button {
   padding: 10px 14px;
   border-radius: 8px;
@@ -33,27 +29,24 @@ header {
   cursor: pointer;
   transition: .25s;
 }
-
 .tool-buttons button.active {
   background: #6366f1;
   box-shadow: 0 0 10px rgba(99,102,241,0.6);
 }
-
 .generator-box {
   background: rgba(255,255,255,0.05);
   padding: 20px;
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.1);
 }
-
 textarea {
   width: 100%;
   height: 120px;
   padding: 10px;
   border-radius: 8px;
   border: none;
+  box-sizing: border-box;
 }
-
 button {
   padding: 12px 18px;
   border: none;
@@ -62,24 +55,20 @@ button {
   color: white;
   cursor: pointer;
 }
-
 #result {
   margin-top: 15px;
   transition: opacity 0.3s ease;
 }
-
 pre {
   white-space: pre-wrap;
   background: rgba(255,255,255,0.05);
   padding: 10px;
   border-radius: 8px;
 }
-
 #copyBtn {
   margin-top: 10px;
   background: #10b981;
 }
-
 .loader {
   border: 4px solid rgba(255,255,255,0.2);
   border-top: 4px solid #6366f1;
@@ -89,13 +78,11 @@ pre {
   animation: spin 1s linear infinite;
   margin: 10px auto;
 }
-
 @keyframes spin {
   100% {
     transform: rotate(360deg);
   }
 }
-
 #historyPanel {
   margin-top: 20px;
   padding: 15px;
@@ -104,15 +91,24 @@ pre {
   border: 1px solid rgba(255,255,255,0.1);
 }
 
+/* ===== HISTORY ITEM ===== */
 .history-item {
   padding: 12px;
   margin-top: 10px;
   background: rgba(255,255,255,0.08);
   border-radius: 10px;
+  border: 1px solid transparent;
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+}
+.history-item:hover {
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.13);
+  border-color: rgba(99,102,241,0.5);
+  box-shadow: 0 6px 16px rgba(99,102,241,0.15);
 }
 
 /* ===== HISTORY ACTIONS ===== */
-
 .history-actions {
   display: flex;
   justify-content: flex-end;
@@ -120,6 +116,7 @@ pre {
   margin-top: 10px;
 }
 
+/* ===== HISTORY ICON (replay / copy / delete) ===== */
 .history-icon {
   width: 34px;
   height: 34px;
@@ -130,15 +127,123 @@ pre {
   background: rgba(255,255,255,0.08);
   cursor: pointer;
   user-select: none;
-  transition: .25s;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   font-size: 18px;
 }
-
 .history-icon:hover {
   background: #6366f1;
   transform: scale(1.08);
+  box-shadow: 0 0 12px rgba(99,102,241,0.6);
+}
+.history-icon:active {
+  transform: scale(.92);
 }
 
-.history-icon:active {
-  transform: scale(.95);
+/* ===== COPY SUCCESS ANIMATION ===== */
+.history-icon-success {
+  background: #10b981 !important;
+  box-shadow: 0 0 14px rgba(16,185,129,0.7);
+  animation: successPop 0.35s ease;
 }
+@keyframes successPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1.15); }
+}
+
+/* ===== HISTORY SEARCH ===== */
+.history-search-input {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  outline: none;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(6px);
+  color: #e5e7eb;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.history-search-input::placeholder {
+  color: rgba(229,231,235,0.5);
+}
+.history-search-input:focus {
+  border-color: #6366f1;
+  background: rgba(255,255,255,0.09);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.35);
+}
+
+/* ===== CLEAR ALL BUTTON ===== */
+.history-clear-all-btn {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #ff4d4d;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+.history-clear-all-btn:hover {
+  background: #e63939;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(230,57,57,0.35);
+}
+.history-clear-all-btn:active {
+  transform: translateY(0);
+}
+
+.history-empty {
+  padding: 10px;
+  opacity: 0.7;
+  text-align: center;
+}
+
+/* ===== TIME BADGE ===== */
+.history-time {
+  float: right;
+  font-size: 11px;
+  opacity: 0.75;
+  background: rgba(99,102,241,0.15);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.history-prompt {
+  opacity: 0.9;
+}
+
+/* ===== RESULT PREVIEW ===== */
+.history-preview {
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.65;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .history-item {
+    padding: 10px;
+  }
+  .history-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+  .history-search-input,
+  .history-clear-all-btn {
+    padding: 9px 12px;
+  }
+}
+Ye lo css 
