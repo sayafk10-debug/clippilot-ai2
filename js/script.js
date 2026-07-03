@@ -4,11 +4,16 @@ const result = document.getElementById("result");
 
 let selectedType = "ideas";
 
+// LOAD HISTORY
+let history = JSON.parse(localStorage.getItem("clipHistory")) || [];
+
+// TOOL SWITCH
 window.setToolType = function (type) {
   selectedType = type;
   updateActiveButton(type);
 };
 
+// ACTIVE BUTTON UI
 function updateActiveButton(type) {
   document.querySelectorAll(".tool-buttons button").forEach(btn => {
     btn.classList.remove("active");
@@ -23,6 +28,7 @@ function updateActiveButton(type) {
   }
 }
 
+// GENERATE CLICK
 button.addEventListener("click", async () => {
   const topic = textarea.value.trim();
 
@@ -45,7 +51,6 @@ button.addEventListener("click", async () => {
     result.innerHTML = `
       <h3>🔥 AI Result (${selectedType})</h3>
       <pre id="typedText"></pre>
-
       <button id="copyBtn">📋 Copy</button>
     `;
 
@@ -67,10 +72,23 @@ button.addEventListener("click", async () => {
 
       typeWriter();
 
+      // COPY BUTTON
       document.getElementById("copyBtn").onclick = () => {
         navigator.clipboard.writeText(aiResponse);
         alert("Copied ✅");
       };
+
+      // SAVE HISTORY
+      history.unshift({
+        type: selectedType,
+        prompt: topic,
+        result: aiResponse
+      });
+
+      localStorage.setItem(
+        "clipHistory",
+        JSON.stringify(history.slice(0, 10))
+      );
 
     }, 100);
 
@@ -88,4 +106,5 @@ button.addEventListener("click", async () => {
   updateActiveButton(selectedType);
 });
 
+// DEFAULT ACTIVE
 updateActiveButton("ideas");
