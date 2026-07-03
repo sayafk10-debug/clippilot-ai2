@@ -5,6 +5,7 @@ const historyBox = document.getElementById("historyList");
 
 let selectedType = "ideas";
 let history = JSON.parse(localStorage.getItem("clipHistory")) || [];
+let searchQuery = "";
 
 window.setToolType = function(type) {
   selectedType = type;
@@ -64,8 +65,7 @@ button.addEventListener("click", async () => {
     renderHistory();
 
   } catch (err) {
-    result.innerHTML =
-      `<p style="color:red">${err.message}</p>`;
+    result.innerHTML = `<p style="color:red">${err.message}</p>`;
   }
 
   button.disabled = false;
@@ -74,9 +74,44 @@ button.addEventListener("click", async () => {
 
 function renderHistory() {
   if (!historyBox) return;
+
   historyBox.innerHTML = "";
 
-  history.forEach((item, index) => {
+  /* 🔍 SEARCH BOX */
+  const searchInput = document.createElement("input");
+  searchInput.placeholder = "🔍 Search history...";
+  searchInput.value = searchQuery;
+
+  searchInput.style.width = "100%";
+  searchInput.style.padding = "10px";
+  searchInput.style.marginBottom = "10px";
+  searchInput.style.borderRadius = "8px";
+  searchInput.style.border = "none";
+  searchInput.style.outline = "none";
+
+  searchInput.addEventListener("input", (e) => {
+    searchQuery = e.target.value.toLowerCase();
+    renderHistory();
+  });
+
+  historyBox.appendChild(searchInput);
+
+  /* FILTER DATA */
+  const filtered = history.filter(item =>
+    item.prompt.toLowerCase().includes(searchQuery) ||
+    item.type.toLowerCase().includes(searchQuery)
+  );
+
+  if (filtered.length === 0) {
+    const empty = document.createElement("div");
+    empty.style.padding = "10px";
+    empty.style.opacity = "0.7";
+    empty.innerText = "No results found";
+    historyBox.appendChild(empty);
+    return;
+  }
+
+  filtered.forEach((item, index) => {
     const div = document.createElement("div");
     div.className = "history-item";
 
@@ -91,9 +126,7 @@ function renderHistory() {
       </div>
     `;
 
-    // Click on item (old behavior)
     div.addEventListener("click", (e) => {
-      // ignore icon clicks
       if (e.target.classList.contains("history-icon")) return;
 
       textarea.value = item.prompt;
@@ -105,14 +138,15 @@ function renderHistory() {
     historyBox.appendChild(div);
   });
 
-  // ICON ACTIONS
   document.querySelectorAll(".history-icon").forEach(icon => {
     icon.addEventListener("click", (e) => {
       e.stopPropagation();
 
       const index = icon.dataset.index;
       const action = icon.dataset.action;
-      const item = history[index];
+      const item = filtered[index];
+
+      if (!item) return;
 
       if (action === "replay") {
         textarea.value = item.prompt;
@@ -127,7 +161,14 @@ function renderHistory() {
       }
 
       if (action === "delete") {
-        history.splice(index, 1);
+        const realIndex = history.findIndex(h =>
+          h.prompt === item.prompt && h.type === item.type
+        );
+
+        if (realIndex !== -1) {
+          history.splice(realIndex, 1);
+        }
+
         localStorage.setItem("clipHistory", JSON.stringify(history));
         renderHistory();
       }
