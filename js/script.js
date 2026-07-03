@@ -2,14 +2,30 @@ const button = document.getElementById("generateBtn");
 const textarea = document.getElementById("prompt");
 const result = document.getElementById("result");
 
-// default tool
 let selectedType = "ideas";
 
-// If you add buttons later, they can change this
+// TOOL SWITCH
 window.setToolType = function (type) {
   selectedType = type;
+  updateActiveButton(type);
 };
 
+// ACTIVE BUTTON UI
+function updateActiveButton(type) {
+  document.querySelectorAll(".tool-buttons button").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  const activeBtn = document.querySelector(
+    `button[onclick="setToolType('${type}')"]`
+  );
+
+  if (activeBtn) {
+    activeBtn.classList.add("active");
+  }
+}
+
+// MAIN GENERATE
 button.addEventListener("click", async () => {
   const topic = textarea.value.trim();
 
@@ -51,3 +67,6 @@ button.addEventListener("click", async () => {
   button.innerHTML = "Generate Ideas 🚀";
   button.disabled = false;
 });
+
+// DEFAULT ACTIVE BUTTON
+updateActiveButton("ideas");
