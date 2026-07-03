@@ -1,22 +1,36 @@
 const button = document.getElementById("generateBtn");
 const textarea = document.getElementById("prompt");
 const result = document.getElementById("result");
+const historyBox = document.getElementById("historyList");
 
 let selectedType = "ideas";
 let history = JSON.parse(localStorage.getItem("clipHistory")) || [];
 
-/* TOOL SWITCH */
-window.setToolType = function (type, fromHistory = false, el = null) {
+/* TOOL MAP */
+const tools = {
+  ideas: "💡 Ideas",
+  script: "🎬 Script",
+  hook: "🔥 Hook",
+  caption: "📝 Caption",
+  hashtags: "# Hashtags"
+};
+
+/* SET ACTIVE TOOL (SAFE) */
+function setActiveTool(type) {
   selectedType = type;
 
   document.querySelectorAll(".tool-buttons button").forEach(btn => {
     btn.classList.remove("active");
-  });
 
-  // highlight only if clicked from UI button
-  if (el) {
-    el.classList.add("active");
-  }
+    if (btn.innerText === tools[type]) {
+      btn.classList.add("active");
+    }
+  });
+}
+
+/* TOOL BUTTON CLICK (HTML onclick use karega) */
+window.setToolType = function(type) {
+  setActiveTool(type);
 };
 
 /* GENERATE */
@@ -57,7 +71,7 @@ button.addEventListener("click", async () => {
         if (i < aiResponse.length) {
           el.innerHTML += aiResponse.charAt(i);
           i++;
-          setTimeout(typeWriter, 8);
+          setTimeout(typeWriter, 10);
         }
       }
 
@@ -68,7 +82,7 @@ button.addEventListener("click", async () => {
         alert("Copied ✅");
       };
 
-      // SAVE HISTORY
+      /* SAVE HISTORY */
       history.unshift({
         type: selectedType,
         prompt: topic,
@@ -96,14 +110,15 @@ button.addEventListener("click", async () => {
   button.disabled = false;
 });
 
-/* HISTORY */
+/* HISTORY RENDER */
 function renderHistory() {
-  const box = document.getElementById("historyList");
-  if (!box) return;
 
-  box.innerHTML = "";
+  if (!historyBox) return;
+
+  historyBox.innerHTML = "";
 
   history.forEach(item => {
+
     const div = document.createElement("div");
     div.className = "history-item";
 
@@ -114,12 +129,13 @@ function renderHistory() {
 
     div.onclick = () => {
       textarea.value = item.prompt;
-      setToolType(item.type, true);
+      setActiveTool(item.type);
     };
 
-    box.appendChild(div);
+    historyBox.appendChild(div);
   });
 }
 
 /* INIT */
+setActiveTool(selectedType);
 renderHistory();
