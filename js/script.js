@@ -39,6 +39,7 @@ button.addEventListener("click", async () => {
     const typed = document.getElementById("typed");
     typed.textContent = "";
     let i = 0;
+
     function typing() {
       if (i < aiResponse.length) {
         typed.textContent += aiResponse.charAt(i);
@@ -57,6 +58,7 @@ button.addEventListener("click", async () => {
       type: selectedType,
       prompt: topic
     });
+
     history = history.slice(0, 10);
     localStorage.setItem("clipHistory", JSON.stringify(history));
     renderHistory();
@@ -74,22 +76,62 @@ function renderHistory() {
   if (!historyBox) return;
   historyBox.innerHTML = "";
 
-  history.forEach(item => {
+  history.forEach((item, index) => {
     const div = document.createElement("div");
     div.className = "history-item";
+
     div.innerHTML = `
       <strong>${item.type}</strong><br>
       ${item.prompt}
+
+      <div class="history-actions">
+        <div class="history-icon" data-action="replay" data-index="${index}">🔄</div>
+        <div class="history-icon" data-action="copy" data-index="${index}">📋</div>
+        <div class="history-icon" data-action="delete" data-index="${index}">🗑️</div>
+      </div>
     `;
 
-    div.onclick = () => {
+    // Click on item (old behavior)
+    div.addEventListener("click", (e) => {
+      // ignore icon clicks
+      if (e.target.classList.contains("history-icon")) return;
+
       textarea.value = item.prompt;
       setToolType(item.type);
       textarea.scrollIntoView({ behavior: "smooth", block: "center" });
       textarea.focus();
-    };
+    });
 
     historyBox.appendChild(div);
+  });
+
+  // ICON ACTIONS
+  document.querySelectorAll(".history-icon").forEach(icon => {
+    icon.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      const index = icon.dataset.index;
+      const action = icon.dataset.action;
+      const item = history[index];
+
+      if (action === "replay") {
+        textarea.value = item.prompt;
+        setToolType(item.type);
+        textarea.scrollIntoView({ behavior: "smooth" });
+        textarea.focus();
+      }
+
+      if (action === "copy") {
+        navigator.clipboard.writeText(item.prompt);
+        alert("Prompt copied ✅");
+      }
+
+      if (action === "delete") {
+        history.splice(index, 1);
+        localStorage.setItem("clipHistory", JSON.stringify(history));
+        renderHistory();
+      }
+    });
   });
 }
 
