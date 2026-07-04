@@ -140,9 +140,11 @@ export default async function handler(req, res) {
       console.error("OpenRouter Error:", data);
       return res.status(response.status).json({
         error:
-          data?.error?.message ||
-          data?.message ||
-          "OpenRouter request failed."
+          "DEBUG OpenRouter: " +
+          (data?.error?.message ||
+            data?.message ||
+            JSON.stringify(data) ||
+            "OpenRouter request failed.")
       });
     }
     const output = data?.choices?.[0]?.message?.content?.trim();
@@ -163,7 +165,7 @@ export default async function handler(req, res) {
     }
     console.error(err);
     return res.status(500).json({
-      error: err.message || "Internal server error."
+      error: "DEBUG CATCH: " + (err.message || "Internal server error.")
     });
   }
 }
