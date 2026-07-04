@@ -59,14 +59,18 @@ export default async function handler(req, res) {
 
         if (!burstCheck.success) {
           return res.status(429).json({
-            error: "Too many requests. Please wait a minute and try again."
+            error: "Too many requests. Please wait a minute and try again.",
+            debugSeenIP: ip,
+            debugWhitelistIP: process.env.TESTER_IP || "NOT_SET"
           });
         }
 
         const dailyCheck = await dailyLimit.limit(ip);
         if (!dailyCheck.success) {
           return res.status(429).json({
-            error: "Daily limit reached. Please try again tomorrow."
+            error: "Daily limit reached. Please try again tomorrow.",
+            debugSeenIP: ip,
+            debugWhitelistIP: process.env.TESTER_IP || "NOT_SET"
           });
         }
       } catch (rlErr) {
