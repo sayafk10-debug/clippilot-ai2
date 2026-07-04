@@ -1,4 +1,9 @@
 async function generateScript(prompt, type = "ideas") {
+  // Frontend validation
+  if (!prompt || !prompt.trim()) {
+    throw new Error("⚠️ Please enter a topic before generating.");
+  }
+
   try {
     const response = await fetch("/api/generate", {
       method: "POST",
@@ -6,7 +11,7 @@ async function generateScript(prompt, type = "ideas") {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        prompt,
+        prompt: prompt.trim(),
         type,
       }),
     });
@@ -22,7 +27,7 @@ async function generateScript(prompt, type = "ideas") {
     if (!response.ok) {
       switch (response.status) {
         case 400:
-          throw new Error("Please enter a valid prompt.");
+          throw new Error("⚠️ Please enter a topic before generating.");
 
         case 401:
           throw new Error("API authentication failed.");
