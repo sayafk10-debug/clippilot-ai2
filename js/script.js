@@ -67,6 +67,8 @@ window.setToolType = function(type) {
 };
 
 button.addEventListener("click", async () => {
+  if (button.disabled) return;
+
   const topic = textarea.value.trim();
   if (!topic) {
     result.innerHTML = '<p style="color:#ffb020;">⚠️ Please enter a topic before generating.</p>';
@@ -75,11 +77,23 @@ button.addEventListener("click", async () => {
   }
 
   button.disabled = true;
-  button.innerText = "Generating...";
-  result.innerHTML = '<div class="loader"></div>';
+  button.innerHTML = `
+    <span class="btn-loader"></span>
+    Generating...
+  `;
+  result.innerHTML = `
+    <div class="loading-card">
+      <div class="loader"></div>
+      <p>Generating AI content...</p>
+    </div>
+  `;
 
   try {
     const aiResponse = await generateScript(topic, selectedType);
+
+    if (!aiResponse || !aiResponse.trim()) {
+      throw new Error("AI returned an empty response.");
+    }
 
     result.innerHTML = `
       <h3>🔥 Result (${escapeHTML(selectedType)})</h3>
@@ -90,8 +104,14 @@ button.addEventListener("click", async () => {
     typeText(document.getElementById("typed"), aiResponse);
 
     const copyBtn = document.getElementById("copyBtn");
-    copyBtn.onclick = () => {
-      navigator.clipboard.writeText(aiResponse);
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(aiResponse);
+      } catch {
+        textarea.value = aiResponse;
+        textarea.select();
+        document.execCommand("copy");
+      }
       copyBtn.innerText = "✅ Copied";
       setTimeout(() => {
         copyBtn.innerText = "Copy";
@@ -111,25 +131,47 @@ button.addEventListener("click", async () => {
     saveHistory();
     renderHistoryList();
 
-  } catch (e) {
-    result.innerHTML = `<p style="color:red">${escapeHTML(e.message)}</p>`;
-  }
+    result.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
 
-  button.disabled = false;
-  button.innerText = "Generate 🚀";
+    textarea.value = "";
+
+  } catch (e) {
+    result.innerHTML = `
+      <div class="error-message">
+        ❌ ${escapeHTML(e.message)}
+      </div>
+    `;
+  } finally {
+    button.disabled = false;
+    button.innerHTML = "Generate 🚀";
+  }
 });
 
 // ===== Non-blocking typing animation =====
+let typingTimer = null;
+
 function typeText(el, text) {
+  if (typingTimer) {
+    clearTimeout(typingTimer);
+    typingTimer = null;
+  }
+
   el.textContent = "";
   let i = 0;
-  (function step() {
+
+  function step() {
     if (i < text.length) {
-      el.textContent += text.charAt(i);
-      i++;
-      setTimeout(step, 8);
+      el.textContent += text.charAt(i++);
+      typingTimer = setTimeout(step, 8);
+    } else {
+      typingTimer = null;
     }
-  })();
+  }
+
+  step();
 }
 
 // ===== "Today / Yesterday / X days ago" =====
@@ -167,7 +209,9 @@ function initHistoryUI() {
   clearAllBtnEl.innerText = "🧹 Clear All History";
   clearAllBtnEl.className = "history-clear-all-btn";
   clearAllBtnEl.addEventListener("click", () => {
-    if (!confirm("Sab history delete karni hai?")) return;
+    if (history.length === 0) return;
+
+    if (!confirm("Delete all history permanently?")) return;
     history = [];
     saveHistory();
     renderHistoryList();
@@ -198,10 +242,39 @@ function initHistoryUI() {
 function applyHistoryItem(id) {
   const item = history.find(h => h.id === id);
   if (!item) return;
+
   textarea.value = item.prompt;
   setToolType(item.type);
-  textarea.scrollIntoView({ behavior: "smooth", block: "center" });
-  textarea.focus();
+
+  if (item.result) {
+    result.innerHTML = `
+      <h3>🔥 Result (${escapeHTML(item.type)})</h3>
+      <pre id="typed">${escapeHTML(item.result)}</pre>
+      <button id="copyBtn">Copy</button>
+    `;
+
+    const copyBtn = document.getElementById("copyBtn");
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(item.result);
+      } catch {
+        const originalPrompt = textarea.value;
+        textarea.value = item.result;
+        textarea.select();
+        document.execCommand("copy");
+        textarea.value = originalPrompt;
+      }
+      copyBtn.innerText = "✅ Copied";
+      setTimeout(() => {
+        copyBtn.innerText = "Copy";
+      }, 1500);
+    };
+
+    result.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    textarea.scrollIntoView({ behavior: "smooth", block: "center" });
+    textarea.focus();
+  }
 }
 
 function handleHistoryAction(action, id, iconEl) {
@@ -214,7 +287,15 @@ function handleHistoryAction(action, id, iconEl) {
 
   if (action === "copy") {
     const textToCopy = item.result || item.prompt;
-    navigator.clipboard.writeText(textToCopy);
+    (async () => {
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+      } catch {
+        textarea.value = textToCopy;
+        textarea.select();
+        document.execCommand("copy");
+      }
+    })();
 
     const originalIcon = iconEl.textContent;
     iconEl.textContent = "✅";
