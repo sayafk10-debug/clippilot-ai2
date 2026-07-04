@@ -1,23 +1,31 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-const redis = Redis.fromEnv();
+let burstLimit = null;
+let dailyLimit = null;
 
-// Short-term burst limit: rokta hai bots/spam ko
-const burstLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(5, "60 s"), // 5 requests per IP per minute
-  analytics: true,
-  prefix: "ratelimit:burst",
-});
+try {
+  const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
 
-// Daily cap: cost control ke liye
-const dailyLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(20, "86400 s"), // 20 requests per IP per day
-  analytics: true,
-  prefix: "ratelimit:daily",
-});
+  burstLimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(5, "60 s"),
+    analytics: true,
+    prefix: "ratelimit:burst",
+  });
+
+  dailyLimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(20, "86400 s"),
+    analytics: true,
+    prefix: "ratelimit:daily",
+  });
+} catch (initErr) {
+  console.error("Rate limiter init failed:", initErr);
+}
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -32,24 +40,30 @@ export default async function handler(req, res) {
     });
   }
   try {
-    // ===== Rate limiting (IP-based) =====
-    const ip =
-      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-      req.socket?.remoteAddress ||
-      "unknown";
+    // ===== Rate limiting (IP-based) - fails open if Redis has issues =====
+    if (burstLimit && dailyLimit) {
+      try {
+        const ip =
+          req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+          req.socket?.remoteAddress ||
+          "unknown";
 
-    const burstCheck = await burstLimit.limit(ip);
-    if (!burstCheck.success) {
-      return res.status(429).json({
-        error: "Too many requests. Please wait a minute and try again."
-      });
-    }
+        const burstCheck = await burstLimit.limit(ip);
+        if (!burstCheck.success) {
+          return res.status(429).json({
+            error: "Too many requests. Please wait a minute and try again."
+          });
+        }
 
-    const dailyCheck = await dailyLimit.limit(ip);
-    if (!dailyCheck.success) {
-      return res.status(429).json({
-        error: "Daily limit reached. Please try again tomorrow."
-      });
+        const dailyCheck = await dailyLimit.limit(ip);
+        if (!dailyCheck.success) {
+          return res.status(429).json({
+            error: "Daily limit reached. Please try again tomorrow."
+          });
+        }
+      } catch (rlErr) {
+        console.error("Rate limit check failed (allowing request):", rlErr);
+      }
     }
 
     const { prompt, type = "ideas" } = req.body || {};
