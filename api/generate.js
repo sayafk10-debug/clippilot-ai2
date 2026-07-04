@@ -49,21 +49,17 @@ export default async function handler(req, res) {
           "unknown";
 
         const burstCheck = await burstLimit.limit(ip);
-        console.error("DEBUG rate limit -> IP:", ip, "burst remaining:", burstCheck.remaining, "success:", burstCheck.success);
 
         if (!burstCheck.success) {
           return res.status(429).json({
-            error: "Too many requests. Please wait a minute and try again.",
-            debugIP: ip,
-            debugRemaining: burstCheck.remaining
+            error: "Too many requests. Please wait a minute and try again."
           });
         }
 
         const dailyCheck = await dailyLimit.limit(ip);
         if (!dailyCheck.success) {
           return res.status(429).json({
-            error: "Daily limit reached. Please try again tomorrow.",
-            debugIP: ip
+            error: "Daily limit reached. Please try again tomorrow."
           });
         }
       } catch (rlErr) {
