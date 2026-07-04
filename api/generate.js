@@ -49,7 +49,7 @@ export default async function handler(req, res) {
           "unknown";
 
         const burstCheck = await burstLimit.limit(ip);
-        console.log("DEBUG rate limit -> IP:", ip, "burst remaining:", burstCheck.remaining, "success:", burstCheck.success);
+        console.error("DEBUG rate limit -> IP:", ip, "burst remaining:", burstCheck.remaining, "success:", burstCheck.success);
 
         if (!burstCheck.success) {
           return res.status(429).json({
