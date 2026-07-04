@@ -41,13 +41,20 @@ export default async function handler(req, res) {
   }
   try {
     // ===== Rate limiting (IP-based) - fails open if Redis has issues =====
-    if (burstLimit && dailyLimit) {
-      try {
-        const ip =
-          req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-          req.socket?.remoteAddress ||
-          "unknown";
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.socket?.remoteAddress ||
+      "unknown";
 
+    // ===== Testing whitelist: skip rate limiting for a trusted IP =====
+    // Set TESTER_IP in Vercel Environment Variables to your own IP
+    // (check it at https://api.ipify.org). Remove this env var before
+    // public launch, or leave it unset to disable the bypass entirely.
+    const isWhitelisted =
+      process.env.TESTER_IP && ip === process.env.TESTER_IP;
+
+    if (!isWhitelisted && burstLimit && dailyLimit) {
+      try {
         const burstCheck = await burstLimit.limit(ip);
 
         if (!burstCheck.success) {
