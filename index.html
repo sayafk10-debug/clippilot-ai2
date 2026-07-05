@@ -5,24 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PK4NYQNZOZ"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PK4NYQNZ0Z"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-PK4NYQNZOZ');
+  gtag('config', 'G-PK4NYQNZ0Z');
 </script>
 
 <title>ClipPilot AI – Viral Ideas, Scripts, Hooks, Captions & Hashtags Generator</title>
 <meta name="description" content="Generate viral video ideas, scripts, hooks, captions, and hashtags instantly with ClipPilot AI — a free AI content tool for creators.">
 <link rel="canonical" href="https://clippilot-ai2.vercel.app/">
 <meta name="theme-color" content="#0f172a">
+
 <!-- Favicon -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://clippilot-ai2.vercel.app/">
@@ -30,23 +32,29 @@
 <meta property="og:title" content="ClipPilot AI – Viral Ideas, Scripts, Hooks, Captions & Hashtags Generator">
 <meta property="og:description" content="Generate viral video ideas, scripts, hooks, captions, and hashtags instantly with ClipPilot AI — a free AI content tool for creators.">
 <meta property="og:image" content="https://clippilot-ai2.vercel.app/og-image.png">
+
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ClipPilot AI – Viral Ideas, Scripts, Hooks, Captions & Hashtags Generator">
 <meta name="twitter:description" content="Generate viral video ideas, scripts, hooks, captions, and hashtags instantly with ClipPilot AI — a free AI content tool for creators.">
 <meta name="twitter:image" content="https://clippilot-ai2.vercel.app/og-image.png">
+
 <link rel="stylesheet" href="css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
+
 <header>
 <nav class="navbar">
 <div class="logo">🚀 ClipPilot AI</div>
 </nav>
 </header>
+
 <section class="generator">
 <h1>💡 AI Content Generator</h1>
 <p>Generate viral ideas, scripts, hooks, captions and hashtags instantly.</p>
+
 <div class="tool-buttons">
 <button data-type="ideas" onclick="setToolType('ideas')">💡 Ideas</button>
 <button data-type="script" onclick="setToolType('script')">🎬 Script</button>
@@ -54,17 +62,22 @@
 <button data-type="caption" onclick="setToolType('caption')">📝 Caption</button>
 <button data-type="hashtags" onclick="setToolType('hashtags')"># Hashtags</button>
 </div>
+
 <div class="generator-box">
 <textarea id="prompt" placeholder="Example: Furniture business for Saudi Arabia..."></textarea>
 <button id="generateBtn">Generate 🚀</button>
 <div id="result"></div>
 </div>
+
 <div id="historyPanel">
 <h3>📜 History</h3>
 <div id="historyList"></div>
 </div>
+
 </section>
+
 <script src="js/api.js"></script>
 <script src="js/script.js"></script>
+
 </body>
 </html>
