@@ -93,7 +93,7 @@ button.addEventListener("click", async () => {
     }
 
     result.innerHTML = `
-      <h3>🔥 Result (${escapeHTML(selectedType)})</h3>
+      <h2>🔥 Result (${escapeHTML(selectedType)})</h2>
       <pre id="typed"></pre>
       <button id="copyBtn">Copy</button>
     `;
@@ -250,7 +250,7 @@ function applyHistoryItem(id) {
 
   if (item.result) {
     result.innerHTML = `
-      <h3>🔥 Result (${escapeHTML(item.type)})</h3>
+      <h2>🔥 Result (${escapeHTML(item.type)})</h2>
       <pre id="typed">${escapeHTML(item.result)}</pre>
       <button id="copyBtn">Copy</button>
     `;
