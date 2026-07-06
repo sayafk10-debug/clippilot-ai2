@@ -47,6 +47,46 @@ const MODELS = [
   "meta-llama/llama-3.1-8b-instruct:free",
 ];
 
+// ===== CONTENT MODERATION =====
+// Basic keyword/pattern filter to block obviously harmful prompts
+// before they are ever sent to the AI provider.
+const BLOCKED_PATTERNS = [
+  // Violence & weapons
+  /\bhow\s+to\s+(make|build|create)\s+(a\s+)?(bomb|explosive|weapon|gun|firearm)\b/i,
+  /\b(kill|murder|assassinate)\s+(someone|a\s+person|him|her|them)\b/i,
+
+  // Hate speech / extremism
+  /\b(ethnic\s+cleansing|genocide|nazi\s+propaganda|terrorist\s+attack\s+plan)\b/i,
+
+  // Self-harm
+  /\bhow\s+to\s+(commit|attempt)\s+suicide\b/i,
+  /\bself[-\s]?harm\s+(method|instructions|technique)\b/i,
+
+  // Child exploitation
+  /\bchild\s+(porn|sexual\s+abuse|abuse\s+material)\b/i,
+  /\bunderage\s+(sex|nude|explicit)\b/i,
+
+  // Illegal drug synthesis
+  /\bhow\s+to\s+(make|synthesize|cook)\s+(meth|methamphetamine|cocaine|heroin|fentanyl)\b/i,
+
+  // Fraud / scams
+  /\bhow\s+to\s+(scam|defraud|phish)\s+(people|users|someone|victims)\b/i,
+
+  // Credit card fraud
+  /\bcredit\s+card\s+(fraud|generator|dump)\b/i,
+
+  // Hacking / malware / cybercrime
+  // Note: narrowed to security-related targets so it doesn't block
+  // legitimate marketing terms like "growth hacking" or "life hacks"
+  /\bhow\s+to\s+(hack|crack|bypass)\s+(a|an|the)?\s*(account|password|system|network|website|server|login|wifi|device|security|firewall)\b/i,
+  /\b(create|write|build)\s+(a\s+)?(malware|ransomware|virus|keylogger|trojan)\b/i,
+  /\bsteal\s+(passwords?|credentials?|accounts?|credit\s+card\s+(numbers?|info))\b/i,
+];
+
+function containsHarmfulContent(text) {
+  return BLOCKED_PATTERNS.some((pattern) => pattern.test(text));
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -95,6 +135,14 @@ export default async function handler(req, res) {
 
     if (prompt.length > 2000) {
       return res.status(400).json({ error: "Prompt too long." });
+    }
+
+    // Content moderation check (runs before any AI call)
+    if (containsHarmfulContent(prompt)) {
+      return res.status(400).json({
+        error:
+          "This request violates our content policy. Please try a different topic.",
+      });
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
