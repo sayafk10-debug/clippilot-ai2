@@ -7,6 +7,7 @@ let selectedType = "ideas";
 let history = loadHistory();
 let searchQuery = "";
 let searchDebounceTimer = null;
+let isRequesting = false;
 
 // Persistent UI elements (created once, prevents losing search focus / duplicate listeners)
 let searchInputEl = null;
@@ -59,15 +60,12 @@ function escapeHTML(str) {
 window.setToolType = function(type) {
   selectedType = type;
   document.querySelectorAll(".tool-buttons button").forEach(btn => {
-    btn.classList.remove("active");
-    if (btn.dataset.type === type) {
-      btn.classList.add("active");
-    }
+    btn.classList.toggle("active", btn.dataset.type === type);
   });
 };
 
 button.addEventListener("click", async () => {
-  if (button.disabled) return;
+  if (isRequesting) return;
 
   const topic = textarea.value.trim();
   if (!topic) {
@@ -76,11 +74,10 @@ button.addEventListener("click", async () => {
     return;
   }
 
+  isRequesting = true;
   button.disabled = true;
-  button.innerHTML = `
-    <span class="btn-loader"></span>
-    Generating...
-  `;
+  button.innerHTML = "Generating...";
+
   result.innerHTML = `
     <div class="loading-card">
       <div class="loader"></div>
@@ -101,16 +98,20 @@ button.addEventListener("click", async () => {
       <button id="copyBtn">Copy</button>
     `;
 
-    typeText(document.getElementById("typed"), aiResponse);
+    requestAnimationFrame(() => {
+      typeText(document.getElementById("typed"), aiResponse);
+    });
 
     const copyBtn = document.getElementById("copyBtn");
     copyBtn.onclick = async () => {
       try {
         await navigator.clipboard.writeText(aiResponse);
       } catch {
+        const originalPrompt = textarea.value;
         textarea.value = aiResponse;
         textarea.select();
         document.execCommand("copy");
+        textarea.value = originalPrompt;
       }
       copyBtn.innerText = "✅ Copied";
       setTimeout(() => {
@@ -141,10 +142,11 @@ button.addEventListener("click", async () => {
   } catch (e) {
     result.innerHTML = `
       <div class="error-message">
-        ❌ ${escapeHTML(e.message)}
+        ❌ ${escapeHTML(e.message || "Something went wrong")}
       </div>
     `;
   } finally {
+    isRequesting = false;
     button.disabled = false;
     button.innerHTML = "Generate 🚀";
   }
@@ -165,7 +167,7 @@ function typeText(el, text) {
   function step() {
     if (i < text.length) {
       el.textContent += text.charAt(i++);
-      typingTimer = setTimeout(step, 8);
+      typingTimer = setTimeout(step, 6);
     } else {
       typingTimer = null;
     }
