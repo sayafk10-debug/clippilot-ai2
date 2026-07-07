@@ -154,13 +154,25 @@ export default async function handler(req, res) {
     // Ensures the model replies in the SAME language/script the user typed in
     // (e.g. Roman Urdu stays Roman Urdu, English stays English), instead of
     // randomly mixing languages or switching to Hindi/Devanagari script.
-    const languageInstruction = `IMPORTANT LANGUAGE RULE: Detect the language and script the user's prompt is written in, and reply ONLY in that same language and script.
-- If the user writes in Roman Urdu (Urdu words spelled using English/Latin letters, e.g. "TikTok k liye ideas do"), you MUST reply in Roman Urdu using Latin letters only. Do NOT use Hindi/Devanagari script (e.g. देवनागरी) under any circumstances, even if some words sound similar.
-- If the user writes in English, reply in English only.
-- If the user writes in Urdu script (اردو), reply in Urdu script.
-- Never mix multiple languages or scripts in a single response.
-- Never switch scripts mid-response.
-`;
+    // Includes a concrete few-shot example because small free models tend to
+    // ignore generic rules but reliably copy a demonstrated output pattern.
+    const languageInstruction = `LANGUAGE RULE (follow this exactly, it overrides everything else):
+Look at the user's message below and identify what language/script it is written in. Your ENTIRE reply must be written in that exact same language and script. This is the single most important rule in this conversation.
+
+- Roman Urdu = Urdu language written with English/Latin alphabet (example: "TikTok k liye ideas do", "kaise banaye", "acha hai"). If the user's message is Roman Urdu, your reply MUST be Roman Urdu, written with Latin letters. Do NOT translate to English. Do NOT use Hindi/Devanagari script (देवनागरी). Do NOT use Urdu script (اردو).
+- Plain English = reply in plain English only.
+- Devanagari Hindi script = reply in Devanagari Hindi script.
+- Urdu script (اردو) = reply in Urdu script.
+- Never mix languages or scripts within one response.
+
+EXAMPLE (this is exactly the style you must match when input is Roman Urdu):
+User message: "TikTok videos k liye ideas do"
+Correct reply style (Roman Urdu, Latin letters, NOT English, NOT Hindi):
+"1. Apne daily routine ka time-lapse banao\n2. Ek trending audio pe quick dance karo\n3. Before-after transformation dikhao\n..."
+
+WRONG reply style for that same input (do NOT do this): replying in English like "1. Quick 30-second dance mashup..." — this is incorrect because the user wrote in Roman Urdu, not English.
+
+Now check the user's actual message below and match its language/script exactly.`;
 
     let taskPrompt = "";
 
@@ -214,7 +226,10 @@ export default async function handler(req, res) {
                 max_tokens: 900,
                 messages: [
                   { role: "system", content: systemPrompt },
-                  { role: "user", content: prompt.trim() },
+                  {
+                    role: "user",
+                    content: `${prompt.trim()}\n\n(Reminder: reply in the exact same language and script as this message above. If this message is in Roman Urdu, your reply must be in Roman Urdu with Latin letters, NOT English, NOT Hindi/Devanagari.)`,
+                  },
                 ],
               }),
             })
