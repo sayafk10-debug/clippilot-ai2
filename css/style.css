@@ -272,3 +272,39 @@ pre {
   font-size: 0.8rem;
   color: #64748b;
 }
+
+/* ===== FLOATING FEEDBACK BUTTON ===== */
+.feedback-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #6366f1;
+  color: white;
+  font-size: 24px;
+  border-radius: 50%;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(99,102,241,0.5);
+  z-index: 999;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.feedback-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(99,102,241,0.7);
+}
+.feedback-fab:active {
+  transform: scale(0.94);
+}
+@media (max-width: 480px) {
+  .feedback-fab {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+}
