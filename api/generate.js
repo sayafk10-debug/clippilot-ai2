@@ -159,7 +159,7 @@ export default async function handler(req, res) {
     const languageInstruction = `LANGUAGE RULE (follow this exactly, it overrides everything else):
 Look at the user's message below and identify what language/script it is written in. Your ENTIRE reply must be written in that exact same language and script. This is the single most important rule in this conversation.
 
-- Roman Urdu = Urdu language written with English/Latin alphabet (example: "TikTok k liye ideas do", "kaise banaye", "acha hai"). If the user's message is Roman Urdu, your reply MUST be Roman Urdu, written with Latin letters. Do NOT translate to English. Do NOT use Hindi/Devanagari script (देवनागरी). Do NOT use Urdu script (اردو).
+- Roman Urdu = Urdu language written with English/Latin alphabet (example: "TikTok k liye ideas do", "kaise banaye", "acha hai"). If the user's message is Roman Urdu, your reply MUST be Roman Urdu, written with Latin letters, for EVERY word except untranslatable proper nouns (app/brand names like "TikTok", "Instagram", or people's names). Do NOT slip into English sentence structure or English phrasing anywhere in the reply, even for individual list items. Do NOT translate to English. Do NOT use Hindi/Devanagari script (देवनागरी). Do NOT use Urdu script (اردو).
 - Plain English = reply in plain English only.
 - Devanagari Hindi script = reply in Devanagari Hindi script.
 - Urdu script (اردو) = reply in Urdu script.
@@ -222,13 +222,13 @@ Now check the user's actual message below and match its language/script exactly.
               },
               body: JSON.stringify({
                 model,
-                temperature: 0.8,
+                temperature: 0.4,
                 max_tokens: 900,
                 messages: [
                   { role: "system", content: systemPrompt },
                   {
                     role: "user",
-                    content: `${prompt.trim()}\n\n(Reminder: reply in the exact same language and script as this message above. If this message is in Roman Urdu, your reply must be in Roman Urdu with Latin letters, NOT English, NOT Hindi/Devanagari.)`,
+                    content: `${prompt.trim()}\n\n(Reminder: reply in the exact same language and script as this message above. If this message is in Roman Urdu, your reply must be in Roman Urdu with Latin letters, NOT English, NOT Hindi/Devanagari. Only keep untranslatable proper nouns in English, e.g. "TikTok". Every other word must be Roman Urdu.)`,
                   },
                 ],
               }),
