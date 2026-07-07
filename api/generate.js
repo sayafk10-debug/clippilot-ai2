@@ -150,32 +150,46 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Server misconfigured." });
     }
 
-    let systemPrompt = "";
+    // ===== LANGUAGE MATCHING INSTRUCTION =====
+    // Ensures the model replies in the SAME language/script the user typed in
+    // (e.g. Roman Urdu stays Roman Urdu, English stays English), instead of
+    // randomly mixing languages or switching to Hindi/Devanagari script.
+    const languageInstruction = `IMPORTANT LANGUAGE RULE: Detect the language and script the user's prompt is written in, and reply ONLY in that same language and script.
+- If the user writes in Roman Urdu (Urdu words spelled using English/Latin letters, e.g. "TikTok k liye ideas do"), you MUST reply in Roman Urdu using Latin letters only. Do NOT use Hindi/Devanagari script (e.g. देवनागरी) under any circumstances, even if some words sound similar.
+- If the user writes in English, reply in English only.
+- If the user writes in Urdu script (اردو), reply in Urdu script.
+- Never mix multiple languages or scripts in a single response.
+- Never switch scripts mid-response.
+`;
+
+    let taskPrompt = "";
 
     switch (type) {
       case "ideas":
-        systemPrompt = `Generate 10 viral content ideas, short and engaging. No explanations.`;
+        taskPrompt = `Generate 10 viral content ideas, short and engaging. No explanations.`;
         break;
 
       case "script":
-        systemPrompt = `Write a viral short video script with Hook, Body, CTA.`;
+        taskPrompt = `Write a viral short video script with Hook, Body, CTA.`;
         break;
 
       case "hook":
-        systemPrompt = `Generate 15 viral hooks under 12 words.`;
+        taskPrompt = `Generate 15 viral hooks under 12 words.`;
         break;
 
       case "caption":
-        systemPrompt = `Generate 10 viral captions.`;
+        taskPrompt = `Generate 10 viral captions.`;
         break;
 
       case "hashtags":
-        systemPrompt = `Generate 30 viral hashtags grouped by trend, medium, niche.`;
+        taskPrompt = `Generate 30 viral hashtags grouped by trend, medium, niche.`;
         break;
 
       default:
-        systemPrompt = `Provide high quality response.`;
+        taskPrompt = `Provide high quality response.`;
     }
+
+    const systemPrompt = `${languageInstruction}\n${taskPrompt}`;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);
