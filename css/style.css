@@ -308,3 +308,25 @@ pre {
     font-size: 20px;
   }
 }
+
+/* ===== SEO CONTENT SECTION ===== */
+.seo-content {
+  max-width: 860px;
+  margin: 40px auto 0;
+  padding: 24px;
+  text-align: center;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.seo-content h2 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+  color: #e5e7eb;
+}
+.seo-content p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #94a3b8;
+  margin: 8px 0;
+}
