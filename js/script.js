@@ -92,6 +92,15 @@ button.addEventListener("click", async () => {
       throw new Error("AI returned an empty response.");
     }
 
+    // ===== GA4: track successful generation =====
+    try {
+      if (typeof gtag === "function") {
+        gtag('event', 'generate_click', {
+          'tool_type': selectedType
+        });
+      }
+    } catch (e) {}
+
     result.innerHTML = `
       <h2>🔥 Result (${escapeHTML(selectedType)})</h2>
       <pre id="typed"></pre>
