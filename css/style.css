@@ -330,3 +330,32 @@ pre {
   color: #94a3b8;
   margin: 8px 0;
 }
+
+/* ===== FEEDBACK WIDGET (Generate result: was this helpful) ===== */
+.feedback-row {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+.feedback-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.08);
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.feedback-btn:hover {
+  background: #6366f1;
+  transform: scale(1.1);
+}
+.feedback-thanks {
+  color: #10b981;
+  font-weight: 500;
+}
