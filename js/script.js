@@ -9,12 +9,10 @@ let searchQuery = "";
 let searchDebounceTimer = null;
 let isRequesting = false;
 
-// Persistent UI elements (created once, prevents losing search focus / duplicate listeners)
 let searchInputEl = null;
 let clearAllBtnEl = null;
 let listContainerEl = null;
 
-// ===== SAFE LOCALSTORAGE LOAD =====
 function loadHistory() {
   try {
     const raw = JSON.parse(localStorage.getItem("clipHistory"));
@@ -36,9 +34,7 @@ function loadHistory() {
 function saveHistory() {
   try {
     localStorage.setItem("clipHistory", JSON.stringify(history));
-  } catch (e) {
-    // Fail silently if localStorage is full or unavailable
-  }
+  } catch (e) {}
 }
 
 function generateId() {
@@ -50,7 +46,6 @@ function generateId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-// ===== XSS-SAFE ESCAPE =====
 function escapeHTML(str) {
   const div = document.createElement("div");
   div.textContent = str ?? "";
@@ -63,6 +58,29 @@ window.setToolType = function(type) {
     btn.classList.toggle("active", btn.dataset.type === type);
   });
 };
+
+function attachFeedbackWidget(toolType) {
+  const upBtn = document.getElementById("fbUp");
+  const downBtn = document.getElementById("fbDown");
+  const fbRow = document.getElementById("fbRow");
+  if (!upBtn || !downBtn || !fbRow) return;
+
+  function sendFeedback(value) {
+    try {
+      if (typeof gtag === "function") {
+        gtag('event', 'feedback_given', {
+          'tool_type': toolType,
+          'feedback_value': value
+        });
+      }
+    } catch (e) {}
+
+    fbRow.innerHTML = `<span class="feedback-thanks">Thanks for the feedback! 🙌</span>`;
+  }
+
+  upBtn.addEventListener("click", () => sendFeedback("up"));
+  downBtn.addEventListener("click", () => sendFeedback("down"));
+}
 
 button.addEventListener("click", async () => {
   if (isRequesting) return;
@@ -92,7 +110,6 @@ button.addEventListener("click", async () => {
       throw new Error("AI returned an empty response.");
     }
 
-    // ===== GA4: track successful generation =====
     try {
       if (typeof gtag === "function") {
         gtag('event', 'generate_click', {
@@ -105,11 +122,18 @@ button.addEventListener("click", async () => {
       <h2>🔥 Result (${escapeHTML(selectedType)})</h2>
       <pre id="typed"></pre>
       <button id="copyBtn">Copy</button>
+      <div class="feedback-row" id="fbRow">
+        <span>Was this helpful?</span>
+        <button id="fbUp" class="feedback-btn" type="button">👍</button>
+        <button id="fbDown" class="feedback-btn" type="button">👎</button>
+      </div>
     `;
 
     requestAnimationFrame(() => {
       typeText(document.getElementById("typed"), aiResponse);
     });
+
+    attachFeedbackWidget(selectedType);
 
     const copyBtn = document.getElementById("copyBtn");
     copyBtn.onclick = async () => {
@@ -128,7 +152,6 @@ button.addEventListener("click", async () => {
       }, 1500);
     };
 
-    // ===== Save to history (newest first, unique id) =====
     history.unshift({
       id: generateId(),
       type: selectedType,
@@ -161,7 +184,6 @@ button.addEventListener("click", async () => {
   }
 });
 
-// ===== Non-blocking typing animation =====
 let typingTimer = null;
 
 function typeText(el, text) {
@@ -185,7 +207,6 @@ function typeText(el, text) {
   step();
 }
 
-// ===== "Today / Yesterday / X days ago" =====
 function timeAgo(dateString) {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -197,7 +218,6 @@ function timeAgo(dateString) {
   return `${diffDays} days ago`;
 }
 
-// ===== Build search bar + clear button + list container ONCE =====
 function initHistoryUI() {
   if (!historyBox || searchInputEl) return;
 
@@ -233,7 +253,6 @@ function initHistoryUI() {
   listContainerEl.className = "history-list-container";
   historyBox.appendChild(listContainerEl);
 
-  // ===== Event delegation: handles clicks properly without mobile focus resetting =====
   listContainerEl.addEventListener("click", (e) => {
     const iconEl = e.target.closest(".history-icon");
     const itemEl = e.target.closest(".history-item");
@@ -324,7 +343,6 @@ function handleHistoryAction(action, id, iconEl) {
   }
 }
 
-// ===== Re-render ONLY the list inside container =====
 function renderHistoryList() {
   if (!historyBox) return;
   if (!listContainerEl) initHistoryUI();
